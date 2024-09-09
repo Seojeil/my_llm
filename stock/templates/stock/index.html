@@ -5,5 +5,11 @@
 {% endblock %}
 
 {% block content %}
-인덱스에오
+{{ stock }}
+<br><br>
+<form action="{% url 'index' %}" method="GET">
+    <input type="text" id="stock_number" name="stock_number">
+    <button type="submit">예측하기</button>
+</form>
+
 {% endblock %}
