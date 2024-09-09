@@ -12,17 +12,38 @@ def index(request):
     url = f'https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo?serviceKey={SERVICE_KEY}&resultType=json&beginBasDt={date}&likeSrtnCd={stock_number}'
     
     response = httpx.Client().get(url)
+    
+    
     data = response.json()['response']['body']['items']['item']
     
-    name = data[0]['itmsNm']
+    if not data:
+        return render(request, 'stock/index.html')
     
-    print(name)
-    
-    stock = ''
-    for d in data:
-        stock += str(d['basDt']) + ', ' + str(d['itmsNm']) + '의 종가는 ' + str(d['clpr']) + '입니다. '
-    
-    context = {
-        'stock': stock,
-    }
-    return render(request, 'stock/index.html', context)
+    else:
+        name = data[0]['itmsNm']
+        
+        stock = ''
+        for d in data:
+            stock += str(d['basDt']) + ', ' + str(d['itmsNm']) + '의 종가는 ' + str(d['clpr']) + '입니다. '
+        
+        context = {
+            'stock': stock,
+        }
+        return render(request, 'stock/index.html', context)
+
+
+def article(request):
+    if request.method == 'POST':
+        input_article = request.POST.get('article')
+        
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_name = f'user_data_{timestamp}.txt'
+        
+        file_path = os.path.join('stock', 'articles', file_name)
+        
+        with open(file_path, 'a', encoding='utf-8') as file:
+            file.write(input_article + '\n')
+        
+        return render(request, 'stock/index.html')
+    else:
+        return render(request, 'stock/articles.html')
