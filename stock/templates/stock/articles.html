@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}
+기사입력
+{% endblock %}
+
+{% block content %}
+
+<form action="{% url 'stock:article' %}" method="POST">
+    {% csrf_token %}
+    <textarea id="article" name="article" rows="50" cols="50"></textarea>
+    <br>
+    <button type="submit">입력하기</button>
+</form>
+{% endblock %}
