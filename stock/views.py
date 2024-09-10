@@ -8,7 +8,6 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import pprint
 
 def index(request):
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'my_llm')))
@@ -21,12 +20,8 @@ def index(request):
         return render(request, 'stock/index.html')
     
     url = f'https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo?serviceKey={SERVICE_KEY}&resultType=json&beginBasDt={date}&likeSrtnCd={stock_number}'
-    
     response = httpx.Client().get(url)
-    
     data = response.json()['response']['body']['items']['item']
-    
-    pprint.pp(data)
     
     if not data:
         return render(request, 'stock/index.html')
@@ -94,7 +89,14 @@ def index(request):
 
 def article(request):
     if request.method == 'POST':
+        input_corporation = request.POST.get('corporation')
+        input_date = request.POST.get('date')
         input_article = request.POST.get('article')
+        
+        if not input_article:
+            return render(request, 'stock/articles.html')
+        
+        input_data = input_corporation + ' ' + str(input_date) + input_article
         
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         file_name = f'user_data_{timestamp}.txt'
@@ -102,7 +104,7 @@ def article(request):
         file_path = os.path.join('stock', 'articles', file_name)
         
         with open(file_path, 'a', encoding='utf-8') as file:
-            file.write(input_article + '\n')
+            file.write(input_data + '\n')
         
         return render(request, 'stock/index.html')
     else:

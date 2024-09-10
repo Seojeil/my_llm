@@ -8,6 +8,9 @@
 
 <form action="{% url 'stock:article' %}" method="POST">
     {% csrf_token %}
+    기업명: <input type="text" id="corporation" name="corporation"><br><br>
+    날짜: <input type="date" id="date" name="date"><br><br>
+    내용<br>
     <textarea id="article" name="article" rows="50" cols="50"></textarea>
     <br>
     <button type="submit">입력하기</button>
