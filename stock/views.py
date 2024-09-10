@@ -54,7 +54,10 @@ def index(request):
 
         retriever = vectorstore.as_retriever()
         prompt = ChatPromptTemplate.from_messages([("user", """
-        당신은 금융컨설턴트입니다. 사용자는 당신에게 특정 종목에 대해서 질문합니다. 검색된 문맥과 주어진 주가를 바탕으로 주가의 변동을 예측해서 예상되는 금일의 종가를 사용자에게 제공하세요.
+        You are a financial consultant. The user asks you about a specific stock.
+        Based on the context provided and the given stock price, predict the stock's price movement and provide the expected closing price for the day.
+        If the context's date is recent, it should be given more weight in the evaluation.
+        The response must be in Korean.
 
         Question: {question}
 
@@ -79,7 +82,7 @@ def index(request):
             | StrOutputParser()
         )
 
-        result = rag_chain.invoke(f"{name}의 주가변화를 예측해줘")
+        result = rag_chain.invoke(f"Please predict the change in the stock price of {name} today.")
 
         context = {
             'result': result,
