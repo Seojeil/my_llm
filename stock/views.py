@@ -8,6 +8,7 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import pprint
 
 def index(request):
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'my_llm')))
@@ -16,12 +17,16 @@ def index(request):
     date = (datetime.now() - timedelta(days=14)).strftime('%Y%m%d')
     stock_number = request.GET.get('stock_number')
     
+    if not stock_number or len(stock_number) != 6:
+        return render(request, 'stock/index.html')
+    
     url = f'https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo?serviceKey={SERVICE_KEY}&resultType=json&beginBasDt={date}&likeSrtnCd={stock_number}'
     
     response = httpx.Client().get(url)
     
-    
     data = response.json()['response']['body']['items']['item']
+    
+    pprint.pp(data)
     
     if not data:
         return render(request, 'stock/index.html')
@@ -34,19 +39,19 @@ def index(request):
             stock += str(d['basDt']) + ', ' + str(d['itmsNm']) + '의 종가는 ' + str(d['clpr']) + '입니다. '
         
         os.environ['USER_AGENT'] = 'MyLangChainApp/1.0'
-
+        
         llm = ChatOpenAI(model="gpt-4o-mini")
-
+        
         path = "stock/articles"
         loader = DirectoryLoader(path, glob="**/*.txt", loader_cls=lambda p: TextLoader(p, encoding="utf-8"), silent_errors=False)
         docs = loader.load()
-
+        
         if not docs:
             raise ValueError("No documents were loaded. Please check the file path and file contents.")
-
+        
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
-
+        
         if not splits:
             raise ValueError("Document splitting resulted in an empty list. Please check document contents.")
 
